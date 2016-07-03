@@ -1,14 +1,9 @@
-package teamtreehouse.com.stormy.weather;
+package davidos.com.weatherhere.weather;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
 
-import teamtreehouse.com.stormy.R;
-
-/**
- * Created by benjakuben on 12/8/14.
- */
 public class Current {
     private String mIcon;
     private long mTime;
@@ -17,6 +12,7 @@ public class Current {
     private double mPrecipChance;
     private String mSummary;
     private String mTimeZone;
+    private String mLocationLabel;
 
     public String getTimeZone() {
         return mTimeZone;
@@ -35,41 +31,7 @@ public class Current {
     }
 
     public int getIconId() {
-        // clear-day, clear-night, rain, snow, sleet, wind, fog, cloudy, partly-cloudy-day, or partly-cloudy-night.
-        int iconId = R.drawable.clear_day;
-
-        if (mIcon.equals("clear-day")) {
-            iconId = R.drawable.clear_day;
-        }
-        else if (mIcon.equals("clear-night")) {
-            iconId = R.drawable.clear_night;
-        }
-        else if (mIcon.equals("rain")) {
-            iconId = R.drawable.rain;
-        }
-        else if (mIcon.equals("snow")) {
-            iconId = R.drawable.snow;
-        }
-        else if (mIcon.equals("sleet")) {
-            iconId = R.drawable.sleet;
-        }
-        else if (mIcon.equals("wind")) {
-            iconId = R.drawable.wind;
-        }
-        else if (mIcon.equals("fog")) {
-            iconId = R.drawable.fog;
-        }
-        else if (mIcon.equals("cloudy")) {
-            iconId = R.drawable.cloudy;
-        }
-        else if (mIcon.equals("partly-cloudy-day")) {
-            iconId = R.drawable.partly_cloudy;
-        }
-        else if (mIcon.equals("partly-cloudy-night")) {
-            iconId = R.drawable.cloudy_night;
-        }
-
-        return iconId;
+        return Forecast.getIconId(mIcon);
     }
 
     public long getTime() {
@@ -94,7 +56,7 @@ public class Current {
     }
 
     public void setTemperature(double temperature) {
-        mTemperature = temperature;
+        mTemperature = (temperature - 32) / 1.8;
     }
 
     public double getHumidity() {
@@ -120,5 +82,13 @@ public class Current {
 
     public void setSummary(String summary) {
         mSummary = summary;
+    }
+
+    public String getLocationLabel() {
+        return mLocationLabel;
+    }
+
+    public void setLocationLabel() {
+        mLocationLabel = mTimeZone;
     }
 }

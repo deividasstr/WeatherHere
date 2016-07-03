@@ -41,7 +41,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Alcatraz Island, CA"
+        android:text="--------"
         android:id="@+id/locationLabel"
         android:layout_above="@+id/timeLabel"
         android:layout_centerHorizontal="true"
@@ -80,7 +80,8 @@
                 android:text="HUMIDITY"
                 android:id="@+id/humidityLabel"
                 android:textColor="#80ffffff"
-                android:gravity="center_horizontal"/>
+                android:gravity="center_horizontal"
+                android:textSize="20sp"/>
 
             <TextView
                 android:layout_width="match_parent"
@@ -101,10 +102,11 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="RAIN/SNOW?"
+                android:text="RAIN/SNOW"
                 android:id="@+id/precipLabel"
                 android:textColor="#80ffffff"
-                android:gravity="center_horizontal"/>
+                android:gravity="center_horizontal"
+                android:textSize="20sp"/>
 
             <TextView
                 android:layout_width="match_parent"
