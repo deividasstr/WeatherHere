@@ -9,8 +9,9 @@ import android.support.v7.widget.RecyclerView;
 
 import java.util.Arrays;
 
+import butterknife.BindView;
 import butterknife.ButterKnife;
-import butterknife.InjectView;
+
 import davidos.com.weatherhere.R;
 import davidos.com.weatherhere.adapters.HourAdapter;
 import davidos.com.weatherhere.weather.Hour;
@@ -19,12 +20,12 @@ public class HourlyForecastActivity extends AppCompatActivity {
 
     private Hour[] mHours;
 
-    @InjectView(R.id.recyclerView) RecyclerView mRecyclerView;
+    @BindView(R.id.recyclerView) RecyclerView mRecyclerView;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_hourly_forecast);
-        ButterKnife.inject(this);
+        ButterKnife.bind(this);
 
         final RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(layoutManager);
@@ -37,7 +38,5 @@ public class HourlyForecastActivity extends AppCompatActivity {
 
         HourAdapter adapter = new HourAdapter(this,mHours);
         mRecyclerView.setAdapter(adapter);
-
-
     }
 }

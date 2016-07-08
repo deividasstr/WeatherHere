@@ -1,4 +1,4 @@
-package davidos.com.weatherhere.ui;
+package davidos.com.weatherhere.alerts;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -7,20 +7,19 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 
-import davidos.com.weatherhere.R;
 
-
-    public class ExitingNoPermissionAlertDialogFragment extends DialogFragment {
+public class ExitingNoPermissionAlertDialogFragment extends DialogFragment {
 
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             Context context = getActivity();
+            String message = getArguments().getString("message");
             AlertDialog.Builder builder = new AlertDialog.Builder(context)
                     .setTitle("Shutting down")
-                    .setMessage("Shutting down because cannot operate without localization access")
+                    .setMessage(message)
                     .setPositiveButton("Ok", dialogClickListeners);
+           return builder.create();
 
-            return builder.create();
         }
         DialogInterface.OnClickListener dialogClickListeners = new DialogInterface.OnClickListener()
         {
@@ -29,4 +28,10 @@ import davidos.com.weatherhere.R;
                 System.exit(0);
             }
         };
+
+        @Override
+        public void onCancel(DialogInterface dialog) {
+            super.onCancel(dialog);
+            System.exit(0);
+        }
     }

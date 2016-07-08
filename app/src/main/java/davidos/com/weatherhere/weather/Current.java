@@ -39,7 +39,7 @@ public class Current {
     }
 
     public String getFormattedTime() {
-        SimpleDateFormat formatter = new SimpleDateFormat("h:mm a");
+        SimpleDateFormat formatter = new SimpleDateFormat("H:mm");
         formatter.setTimeZone(TimeZone.getTimeZone(getTimeZone()));
         Date dateTime = new Date(getTime() * 1000);
         String timeString = formatter.format(dateTime);

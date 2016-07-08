@@ -1,6 +1,5 @@
 # Add project specific ProGuard rules here.
 # By default, the flags in this file are appended to flags specified
-# in /Users/benjakuben/Development/android-sdk/tools/proguard/proguard-android.txt
 # You can edit the include path and order by changing the proguardFiles
 # directive in build.gradle.
 #
@@ -23,3 +22,12 @@
     public static int d(...);
     public static int e(...);
 }
+-keep public class * implements butterknife.internal.ViewBinder { public <init>(); }
+
+# Prevent obfuscation of types which use ButterKnife annotations since the simple name
+# is used to reflectively look up the generated ViewBinder.
+-keep class butterknife.* { @butterknife.* *; }
+-keepclasseswithmembernames class * { @butterknife.* *; }
+-keep class **$$ViewBinder { *; }
+-keep class okio.** { *; }
+-dontwarn okio.**

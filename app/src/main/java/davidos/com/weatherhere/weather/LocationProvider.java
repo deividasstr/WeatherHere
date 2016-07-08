@@ -29,14 +29,10 @@ import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
 
-import davidos.com.weatherhere.ui.ExitingNoPermissionAlertDialogFragment;
-
 public class LocationProvider extends AppCompatActivity implements
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener,
         LocationListener {
-
-    private boolean mIsRequestingPermission = false;
 
     public interface LocationCallback {
 
@@ -49,7 +45,7 @@ public class LocationProvider extends AppCompatActivity implements
      * This code is returned in Activity.onActivityResult
      */
     private final static int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
-    private static final int REQUEST_CHECK_SETTINGS = 1;
+    private static final int REQUEST_CHECK_SETTINGS = 2;
     private final static int REQUEST_PERMISSION_LOCALIZATIONS = 1;
 
     private LocationCallback mLocationCallback;
@@ -69,12 +65,12 @@ public class LocationProvider extends AppCompatActivity implements
 
         // Create the LocationRequest object
         mLocationRequest = LocationRequest.create()
-                .setPriority(LocationRequest.PRIORITY_LOW_POWER)
+                .setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY)
                 .setInterval(20 * 1000)        // 10 seconds, in milliseconds
                 .setFastestInterval(1000); // 1 second, in milliseconds
 
         mLocationSettingsRequestBuilder = new LocationSettingsRequest.Builder()
-                .addLocationRequest(mLocationRequest);
+                .addLocationRequest(mLocationRequest).setAlwaysShow(true);
 
         mContext = context;
     }
@@ -94,6 +90,8 @@ public class LocationProvider extends AppCompatActivity implements
     @Override
     public void onConnected(@Nullable Bundle bundle) {
         Log.i(TAG, "Location services connected");
+
+        //Checking for localization settings
         PendingResult<LocationSettingsResult> result =
                 LocationServices.SettingsApi.checkLocationSettings(mGoogleApiClient,
                         mLocationSettingsRequestBuilder.build());
@@ -105,6 +103,7 @@ public class LocationProvider extends AppCompatActivity implements
                     case LocationSettingsStatusCodes.SUCCESS:
                         // All location settings are satisfied. The client can
                         // initialize location requests here.
+
                         break;
                     case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
                         // Location settings are not satisfied, but this can be fixed
@@ -113,12 +112,10 @@ public class LocationProvider extends AppCompatActivity implements
                             // Show the dialog by calling startResolutionForResult(),
                             // and check the result in onActivityResult().
                             status.startResolutionForResult((Activity) mContext, REQUEST_CHECK_SETTINGS);
-
                         } catch (IntentSender.SendIntentException e) {
                             // Ignore the error.
                             Log.e(TAG, "Failed to resolve location settings", e);
                         }
-
                         break;
                     case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
                         // Location settings are not satisfied. However, we have no way
@@ -131,14 +128,13 @@ public class LocationProvider extends AppCompatActivity implements
 
         Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
         if (location == null) {
-            if (ActivityCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                 LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
             } else {
                 if (Build.VERSION.SDK_INT >= 23) {
-                    ActivityCompat.requestPermissions((Activity) mContext, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, REQUEST_PERMISSION_LOCALIZATIONS);
+                    ActivityCompat.requestPermissions((Activity) mContext, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_PERMISSION_LOCALIZATIONS);
                 }
             }
-
         } else {
             mLocationCallback.handleNewLocation(location);
         }
@@ -167,7 +163,7 @@ public class LocationProvider extends AppCompatActivity implements
              */
             } catch (IntentSender.SendIntentException e) {
                 // Log the error
-                e.printStackTrace();
+                Log.e(TAG, "Failed resolving connection error", e);
             }
         } else {
             /*
@@ -180,31 +176,8 @@ public class LocationProvider extends AppCompatActivity implements
         }
     }
 
-    private void alertUserAboutPermissionError() {
-        ExitingNoPermissionAlertDialogFragment dialog = new ExitingNoPermissionAlertDialogFragment();
-        dialog.show(getFragmentManager(), "error_dialog");
-    }
     @Override
     public void onLocationChanged(Location location) {
         mLocationCallback.handleNewLocation(location);
-    }
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        System.out.println("result");
-        switch (requestCode) {
-            case REQUEST_PERMISSION_LOCALIZATIONS: {
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    System.out.println("success");
-                    disconnect();
-                    connect();
-                } else {
-                    System.out.println("fail");
-                    alertUserAboutPermissionError();
-
-                }
-            }
-        }
     }
 }

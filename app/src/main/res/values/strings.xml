@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="action_settings">action_settings</string>
+    <string name="alertLocationSettings">Shutting down because cannot operate without localization access. Please allow localization access in settings</string>
+    <string name="alertNoPermission">Shutting down because cannot operate without localization access. Please allow localization access in app settings</string>
 </resources>

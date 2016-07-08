@@ -11,8 +11,8 @@ import android.widget.Toast;
 
 import java.util.Arrays;
 
+import butterknife.BindView;
 import butterknife.ButterKnife;
-import butterknife.InjectView;
 import davidos.com.weatherhere.R;
 import davidos.com.weatherhere.adapters.DayAdapter;
 import davidos.com.weatherhere.weather.Day;
@@ -21,13 +21,13 @@ public class DailyForecastActivity extends Activity {
 
     private Day[] mDays;
 
-    @InjectView(android.R.id.list) ListView mListView;
+    @BindView(android.R.id.list) ListView mListView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_daily_forecast);
-        ButterKnife.inject(this);
+        ButterKnife.bind(this);
 
         Intent intent = getIntent();
         Parcelable[] parcelables= intent.getParcelableArrayExtra(MainActivity.DAILY_FORECAST);

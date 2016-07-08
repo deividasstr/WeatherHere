@@ -1,13 +1,16 @@
 package davidos.com.weatherhere.ui;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
-import android.support.v4.app.FragmentActivity;
+import android.support.annotation.NonNull;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
@@ -27,19 +30,23 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 
+import butterknife.BindView;
 import butterknife.ButterKnife;
-import butterknife.InjectView;
 import butterknife.OnClick;
 import davidos.com.weatherhere.BuildConfig;
 import davidos.com.weatherhere.R;
+import davidos.com.weatherhere.alerts.ConnectionToDataAlertDialogFragment;
+import davidos.com.weatherhere.alerts.ExitingNoPermissionAlertDialogFragment;
+import davidos.com.weatherhere.alerts.NoDataAlertDialogFragment;
 import davidos.com.weatherhere.weather.Current;
 import davidos.com.weatherhere.weather.Day;
 import davidos.com.weatherhere.weather.Forecast;
 import davidos.com.weatherhere.weather.Hour;
 import davidos.com.weatherhere.weather.LocationProvider;
 
-public class MainActivity extends FragmentActivity implements LocationProvider.LocationCallback {
+public class MainActivity extends AppCompatActivity implements LocationProvider.LocationCallback {
 
+    private static final int REQUEST_CHECK_SETTINGS = 2;
     private final int REQUEST_PERMISSION_LOCALIZATIONS = 1;
     public static final String TAG = MainActivity.class.getSimpleName();
     public static final String DAILY_FORECAST = "DAILY_FORECAST";
@@ -51,59 +58,48 @@ public class MainActivity extends FragmentActivity implements LocationProvider.L
     private double mLatitude = 0;
     private double mLongitude = 0;
 
-    @InjectView(R.id.timeLabel)
+    @BindView(R.id.timeLabel)
     TextView mTimeLabel;
-    @InjectView(R.id.temperatureLabel)
+    @BindView(R.id.temperatureLabel)
     TextView mTemperatureLabel;
-    @InjectView(R.id.humidityValue)
+    @BindView(R.id.humidityValue)
     TextView mHumidityValue;
-    @InjectView(R.id.precipValue)
+    @BindView(R.id.precipValue)
     TextView mPrecipValue;
-    @InjectView(R.id.summaryLabel)
+    @BindView(R.id.summaryLabel)
     TextView mSummaryLabel;
-    @InjectView(R.id.iconImageView)
+    @BindView(R.id.iconImageView)
     ImageView mIconImageView;
-    @InjectView(R.id.refreshImageView)
+    @BindView(R.id.refreshImageView)
     ImageView mRefreshImageView;
-    @InjectView(R.id.progressBar)
+    @BindView(R.id.progressBar)
     ProgressBar mProgressBar;
-    @InjectView(R.id.locationLabel) TextView mLocationLabel;
-
-
-
+    @BindView(R.id.locationLabel) TextView mLocationLabel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        ButterKnife.inject(this);
+        ButterKnife.bind(this);
 
         mLocationProvider = new LocationProvider(this, this);
 
         mProgressBar.setVisibility(View.INVISIBLE);
 
-        mRefreshImageView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mLongitude != 0 && mLatitude != 0){
-                    getForecast();
-                }
-            }
-        });
-
         if (mLongitude != 0 && mLatitude != 0){
             getForecast();
         }
 
-
         Log.d(TAG, "Main UI code is running!");
     }
 
+    //Getting data from forecast.io API
     public void getForecast() {
         String apiKey = BuildConfig.FORCASTE_IO_API_KEY;
         String forecastUrl = "https://api.forecast.io/forecast/" + apiKey +
                 "/" + mLatitude + "," + mLongitude;
 
+        //Checking for network availability
         if (isNetworkAvailable()) {
             toggleRefresh();
 
@@ -159,6 +155,7 @@ public class MainActivity extends FragmentActivity implements LocationProvider.L
         }
     }
 
+    //Changing between refresh bar and icon
     private void toggleRefresh() {
         if (mProgressBar.getVisibility() == View.INVISIBLE) {
             mProgressBar.setVisibility(View.VISIBLE);
@@ -169,6 +166,7 @@ public class MainActivity extends FragmentActivity implements LocationProvider.L
         }
     }
 
+    //Updating display with new data
     private void updateDisplay() {
         mTemperatureLabel.setText(mForecast.getCurrent().getTemperature() + "");
         mTimeLabel.setText("At " + mForecast.getCurrent().getFormattedTime() + " it will be");
@@ -190,6 +188,7 @@ public class MainActivity extends FragmentActivity implements LocationProvider.L
         return forecast;
     }
 
+    //Getting daily weather data
     private Day[] getDay(String jsonData) throws JSONException {
         JSONObject forecast = new JSONObject(jsonData);
         String timezone = forecast.getString("timezone");
@@ -213,6 +212,7 @@ public class MainActivity extends FragmentActivity implements LocationProvider.L
         return days;
     }
 
+    //Getting hourly data
     private Hour[] getHour(String jsonData) throws JSONException {
         JSONObject forecast = new JSONObject(jsonData);
         String timezone = forecast.getString("timezone");
@@ -236,6 +236,7 @@ public class MainActivity extends FragmentActivity implements LocationProvider.L
         return hours;
     }
 
+    //Getting current weather data
     private Current getCurrentDetails(String jsonData) throws JSONException {
         JSONObject forecast = new JSONObject(jsonData);
         String timezone = forecast.getString("timezone");
@@ -277,30 +278,48 @@ public class MainActivity extends FragmentActivity implements LocationProvider.L
     }
 
     @Override
-    protected void onPause() {
-        super.onPause();
-        Log.i(TAG, "Paused");
+    protected void onStop() {
+        super.onStop();
         mLocationProvider.disconnect();
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        Log.i(TAG, "Resumed");
+    protected void onStart() {
+        super.onStart();
         mLocationProvider.connect();
     }
 
     private void alertUserAboutConnectionError() {
         ConnectionToDataAlertDialogFragment dialog = new ConnectionToDataAlertDialogFragment();
-        dialog.show(getFragmentManager(), "error_dialog");
+        dialog.show(getFragmentManager(), "network_error_dialog");
     }
-    /*private void alertUserAboutPermissionError() {
+    private void alertUserAboutPermissionError() {
+        String message = getString(R.string.alertNoPermission);
         ExitingNoPermissionAlertDialogFragment dialog = new ExitingNoPermissionAlertDialogFragment();
-        dialog.show(getFragmentManager(), "error_dialog");
-    }*/
+        Bundle args = new Bundle();
+        args.putString("message", message);
+        dialog.setArguments(args);
+        dialog.show(getFragmentManager(), "permission_error_dialog");
+    }
+    private void alertUserAboutNoData() {
+        NoDataAlertDialogFragment dialog = new NoDataAlertDialogFragment();
+        dialog.show(getFragmentManager(), "no_data_dialog");
+    }
+    private void alertUserAboutLocationSettingsError() {
+        String message = getString(R.string.alertLocationSettings);
+        ExitingNoPermissionAlertDialogFragment dialog = new ExitingNoPermissionAlertDialogFragment();
+        Bundle args = new Bundle();
+        args.putString("message", message);
+        dialog.setArguments(args);
+        dialog.show(getFragmentManager(), "permission_error_dialog");
+    }
 
     @OnClick(R.id.dailyButton)
     public void startDailyActivity(View view) {
+        if (mLongitude == 0 && mLatitude == 0){
+            alertUserAboutNoData();
+            return;
+        }
         Intent intent = new Intent(this, DailyForecastActivity.class);
         intent.putExtra(DAILY_FORECAST, mForecast.getDay());
         startActivity(intent);
@@ -308,14 +327,25 @@ public class MainActivity extends FragmentActivity implements LocationProvider.L
 
     @OnClick(R.id.hourlyButton)
     public void startHourlyActivity(View view) {
+        if (mLongitude == 0 && mLatitude == 0){
+            alertUserAboutNoData();
+            return;
+        }
         Intent intent = new Intent(this, HourlyForecastActivity.class);
         intent.putExtra(HOURLY_FORECAST, mForecast.getHour());
         startActivity(intent);
     }
-    /*@Override
+    @OnClick (R.id.refreshImageView)
+    public void refresh(View view){
+
+            if (mLongitude != 0 && mLatitude != 0){
+                getForecast();
+            }
+        }
+
+    @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
         switch (requestCode) {
             case REQUEST_PERMISSION_LOCALIZATIONS: {
                 if (grantResults.length > 0
@@ -324,9 +354,27 @@ public class MainActivity extends FragmentActivity implements LocationProvider.L
                     mLocationProvider.connect();
                 } else {
                     alertUserAboutPermissionError();
-
                 }
             }
         }
-    }*/
+    }
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        switch (requestCode) {
+            case REQUEST_CHECK_SETTINGS:
+                switch (resultCode) {
+                    case Activity.RESULT_OK:
+                        // All required changes were successfully made
+                        break;
+                    case Activity.RESULT_CANCELED:
+                        // The user was asked to change settings, but chose not to
+                        alertUserAboutLocationSettingsError();
+                        break;
+                    default:
+                        break;
+                }
+                break;
+        }
+    }
 }
