@@ -22,7 +22,7 @@ public class ConnectionToDataAlertDialogFragment extends DialogFragment {
         Context context = getActivity();
         AlertDialog.Builder builder = new AlertDialog.Builder(context)
                 .setTitle("Shutting down")
-                .setMessage("Localization services are required for app to run. Shutting down.")
+                .setMessage("Currently network connection is not available. Please fix it and try again later.")
                 .setPositiveButton(("Ok"), null);
 
         return builder.create();

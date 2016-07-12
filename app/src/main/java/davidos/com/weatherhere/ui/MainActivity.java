@@ -316,13 +316,17 @@ public class MainActivity extends AppCompatActivity implements LocationProvider.
 
     @OnClick(R.id.dailyButton)
     public void startDailyActivity(View view) {
-        if (mLongitude == 0 && mLatitude == 0){
+        if (mLongitude == 0 && mLatitude == 0) {
             alertUserAboutNoData();
             return;
         }
         Intent intent = new Intent(this, DailyForecastActivity.class);
-        intent.putExtra(DAILY_FORECAST, mForecast.getDay());
-        startActivity(intent);
+        if (mForecast == null) {
+            alertUserAboutConnectionError();
+        } else {
+            intent.putExtra(DAILY_FORECAST, mForecast.getDay());
+            startActivity(intent);
+        }
     }
 
     @OnClick(R.id.hourlyButton)
@@ -332,8 +336,12 @@ public class MainActivity extends AppCompatActivity implements LocationProvider.
             return;
         }
         Intent intent = new Intent(this, HourlyForecastActivity.class);
-        intent.putExtra(HOURLY_FORECAST, mForecast.getHour());
-        startActivity(intent);
+        if (mForecast == null){
+            alertUserAboutConnectionError();
+        } else {
+            intent.putExtra(HOURLY_FORECAST, mForecast.getHour());
+            startActivity(intent);
+        }
     }
     @OnClick (R.id.refreshImageView)
     public void refresh(View view){
